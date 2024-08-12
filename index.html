@@ -14,16 +14,27 @@
             <h1>Job Description</h1>
             <form id="question-form">
                 <label for="job-description">Enter Job Description:</label>
-                <textarea id="job-description" name="job_description" rows="6" placeholder="Type or paste the job description here..."></textarea>
+                <textarea id="job-description" name="job_description" rows="6"></textarea>
                 <button type="submit">Generate Questions</button>
             </form>
         </div>
         <div class="left-panel">
             <h2>Generated Interview Questions</h2>
-            <div id="loader" class="loader"></div>
-            <div id="questions-output" class="questions-output">
-                <div id="questions-content"></div>
+            <div id="loader" class="hidden">
+                <div class="camera">
+                    <div class="container">
+                        <div class="side" style="--i: 0; background: #D9ED92;"></div>
+                        <div class="side" style="--i: 1; background: #B5E48C;"></div>
+                        <div class="side" style="--i: 2; background: #99D98C;"></div>
+                        <div class="side" style="--i: 3; background: #76C893;"></div>
+                        <div class="side" style="--i: 4; background: #52B69A;"></div>
+                        <div class="side" style="--i: 5; background: #34A0A4;"></div>
+                        <div class="side" style="--i: 6; background: #168AAD;"></div>
+                        <div class="side" style="--i: 7; background: #1A759F;"></div>
+                    </div>
+                </div>
             </div>
+            <div id="questions-content"></div>
         </div>
     </div>
     <script src="script.js"></script>

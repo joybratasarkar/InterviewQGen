@@ -3,10 +3,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const outputDiv = document.getElementById('questions-output');
     const loader = document.getElementById('loader');
     const questionsContent = document.getElementById('questions-content');
-
+    debugger;
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
-
+debugger;
         const jobDescription = document.getElementById('job-description').value;
 
         // Show loader

@@ -2,31 +2,41 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from langchain_openai import OpenAI
 from langchain_core.prompts import PromptTemplate
-from transformers import pipeline
-import openai
+from transformers import BartTokenizer, BartForConditionalGeneration
+import torch
 from dotenv import load_dotenv
 import os
 from fastapi.middleware.cors import CORSMiddleware
+import openai
+import logging
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from functools import lru_cache
 
 # Load environment variables from the .env file
 load_dotenv()
+
+# Initialize logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Set up OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Initialize Hugging Face summarization pipeline with an appropriate model
-summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+# Initialize BART model and tokenizer with the lighter version
+tokenizer = BartTokenizer.from_pretrained('facebook/bart-base')
+model = BartForConditionalGeneration.from_pretrained('facebook/bart-base')
 
 # Initialize OpenAI LLM
 llm = OpenAI()
@@ -50,32 +60,62 @@ question_prompt = PromptTemplate(template=question_prompt_template, input_variab
 class JobDescription(BaseModel):
     description: str
 
-def summarize_job_description(job_description):
-    input_length = len(job_description.split())
-    if input_length > 500:
-        max_length = 150
-        min_length = 50
-    elif input_length > 300:
-        max_length = 100
-        min_length = 30
-    else:
-        max_length = 80
-        min_length = 20
-    summary = summarizer(job_description, max_length=max_length, min_length=min_length, do_sample=False)
-    return summary[0]['summary_text']
+# Create a thread pool executor for parallel processing
+executor = ThreadPoolExecutor(max_workers=8)
 
-def generate_interview_questions(job_description_summary):
+@lru_cache(maxsize=100)
+def get_cached_summary(job_description):
+    return summarize_job_description(job_description)
+
+async def summarize_job_description(job_description, chunk_size=512):
+    # Check cache
+    cached_summary = get_cached_summary(job_description)
+    if cached_summary:
+        return cached_summary
+
+    # Split the job description into manageable chunks
+    chunks = [job_description[i:i + chunk_size] for i in range(0, len(job_description), chunk_size)]
+    
+    # Use asyncio to parallelize summarization
+    loop = asyncio.get_event_loop()
+    tasks = [loop.run_in_executor(executor, process_chunk, chunk) for chunk in chunks]
+    summaries = await asyncio.gather(*tasks)
+    
+    # Combine all chunk summaries
+    full_summary = " ".join(summaries)
+    
+    # Cache the result
+    get_cached_summary.cache_set(job_description, full_summary)
+    
+    return full_summary
+
+def process_chunk(chunk):
+    inputs = tokenizer(chunk, return_tensors='pt', max_length=512, truncation=True)
+    summary_ids = model.generate(
+        inputs['input_ids'],
+        max_length=100,
+        min_length=30,
+        length_penalty=1.0,
+        num_beams=1,
+        early_stopping=True
+    )
+    summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+    return summary
+
+async def generate_interview_questions(job_description_summary):
     prompt = question_prompt.format(job_description_summary=job_description_summary)
     questions = llm(prompt)
     return questions.strip()
 
 @app.post("/generate")
-def generate(job_description: JobDescription):
+async def generate(job_description: JobDescription):
     try:
-        print('---------------------------------------')
-        summary = summarize_job_description(job_description.description)
-        questions = generate_interview_questions(summary)
-        print('questions', questions)
+        summary = await summarize_job_description(job_description.description)
+        logger.info('Job Description Summary: %s', summary)
+        print('summary',summary)
+        questions = await generate_interview_questions(summary)
+        logger.info('Generated Questions: %s', questions)
         return {"questions": questions}
     except Exception as e:
+        logger.error('Error occurred: %s', str(e))
         raise HTTPException(status_code=500, detail=str(e))
