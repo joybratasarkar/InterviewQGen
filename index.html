@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Question Generator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="right-panel">
+            <h1>Job Description</h1>
+            <form id="question-form">
+                <label for="job-description">Enter Job Description:</label>
+                <textarea id="job-description" name="job_description" rows="6" placeholder="Type or paste the job description here..."></textarea>
+                <button type="submit">Generate Questions</button>
+            </form>
+        </div>
+        <div class="left-panel">
+            <h2>Generated Interview Questions</h2>
+            <div id="loader" class="loader"></div>
+            <div id="questions-output" class="questions-output">
+                <div id="questions-content"></div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>

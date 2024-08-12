@@ -1,0 +1,130 @@
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f4f4f9; /* Light background for a clean look */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: #333;
+}
+
+.container {
+    display: flex;
+    width: 80%;
+    /* padding: 20px; */
+    /* max-width: 1200px; */
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e0e0e0;
+}
+
+.right-panel,
+.left-panel {
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.right-panel {
+    flex: 1;
+    border-right: 2px solid #e0e0e0; /* Lighter border */
+    background: #f9f9f9; /* Slightly off-white background */
+}
+
+.left-panel {
+    flex: 2;
+    background: #ffffff; /* White background for content display */
+}
+
+h1, h2 {
+    color: #333; /* Darker text for readability */
+}
+
+textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px solid #d1d1d1; /* Light grey border */
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+    background-color: #f9f9f9; /* Light background for text area */
+}
+
+textarea:focus {
+    border-color: #007bff; /* Highlight border on focus */
+    outline: none;
+}
+
+button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: #007bff; /* Blue button */
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+
+button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+.loader {
+    display: none;
+    width: 60px;
+    height: 60px;
+    margin: 20px auto;
+    position: relative;
+}
+
+.loader:before, .loader:after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50px;
+    height: 50px;
+    border: 8px solid transparent;
+    border-radius: 50%;
+    border-top: 8px solid #007bff; /* Blue loader */
+    animation: spin 1.5s linear infinite;
+    transform: translate(-50%, -50%);
+}
+
+.loader:after {
+    border-top-color: transparent;
+    animation: spin-reverse 1.5s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes spin-reverse {
+    0% { transform: rotate(360deg); }
+    100% { transform: rotate(0deg); }
+}
+
+.questions-output {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#questions-content {
+    /* padding: 20px; */
+    border-radius: 8px;
+    width: 100%;
+    max-height: 400px;
+    overflow-y: auto;
+    font-family: 'Courier New', monospace; /* Monospaced font for code-like text */
+}
